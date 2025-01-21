@@ -238,8 +238,7 @@ class BasicAlgorithms {
 
         return result;
     }    
-    
-    #endregion
+    #endregion 
 
     #region Two pointers
     /*
@@ -323,9 +322,54 @@ class BasicAlgorithms {
         return result; // another way would have been a triple loop brute force
     #endregion
 
-    #region Reverse Iteration
+    #region Sliding Window
+    public int MaxProfit(int[] prices) {
+        // https://leetcode.com/problems/best-time-to-buy-and-sell-stock/
+        // not actually the most optimal solution for this, but its a basis for sliding window
+        int left = 0, right = 1, max = 0;
+        while (right < prices.Length) {
+            if (prices[right] > prices[left]) { // we are in an up swing, we check 
+                int profit = prices[right] - prices[left]; // calculate the profit
+                max = Math.Max(max, profit); // compare to current max profit
+            } else {
+                left = right; // move left pointer to a downswing
+            }
+            right++; // always increment right pointer
+        }
+        return max;
+    }
 
     #endregion
+
+    #region Kadane's algorithm - Maximum Sub Array
+    // TODO
+    #endregion
+
+    #region Binary Search
+    public int Search(int[] nums, int target) {
+        // https://leetcode.com/problems/binary-search/
+        int left = 0, right = nums.Length -1;
+        while(left <= right) {
+            int mid = left + ((right - left) / 2); // get midpoint without overflow
+            if (nums[mid] == target) {
+                return mid; // found
+            } else if (nums[mid] < target) { // target space is in the right half
+                left = mid + 1;
+            } else { // otherwise it is in the left half
+                right = mid - 1;
+            }
+        } 
+        return -1; // not found
+    }
+    #endregion
+
+    #region Reverse Iteration
+    public void countBackwards(IEnumerable<int> nums)
+        for (int i = nums.Length - 1; i >= 0; i--) {
+            var foo = nums[i];
+        }
+    #endregion
+
 
     #region Linked List
  public class ListNode {
@@ -400,4 +444,3 @@ class BasicAlgorithms {
 
 
 #endregion
-    // LINQ Sort
