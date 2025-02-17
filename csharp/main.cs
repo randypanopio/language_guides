@@ -164,6 +164,10 @@ public class DataStructures {
     // Access value
     var value = kvp.Value;
     #endregion
+
+    #region Switch Case
+
+    #endregion
 }
 
 class BasicAlgorithms {
@@ -320,6 +324,23 @@ class BasicAlgorithms {
             }
         }
         return result; // another way would have been a triple loop brute force
+
+    // Move Zeroes
+     public void MoveZeroes(int[] nums) {
+        // https://leetcode.com/problems/move-zeroes/
+        // Need to preserve order of the array and  push all the zeroes to the end of the array
+        var insert = 0; // first pointer where to insert non zeros
+        for (int i = 0; i < nums.Length; i++) { // 2nd pointer is i in this case and will just normally interate through the whole array
+            if (nums[i] != 0 ) { // non zero found, update
+                nums[insert] = nums[i]; // update insert position with new val
+                insert++; // update the insert 1st pointer
+            }
+        }
+        for (int i=insert; i < nums.Length; i++) { // backfill the array with zeroes
+            nums[i] = 0;
+        }
+    }
+    
     #endregion
 
     #region Sliding Window
