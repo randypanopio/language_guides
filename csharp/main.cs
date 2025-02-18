@@ -340,7 +340,26 @@ class BasicAlgorithms {
             nums[i] = 0;
         }
     }
-    
+
+    // Minimum Time to Make Rope Colorful
+    public int MinCost(string colors, int[] neededTime) {
+        // https://leetcode.com/problems/minimum-time-to-make-rope-colorful/
+        // instead of backtrack, use sliding window to find adjacent to eliminate to fulfill the condition
+        int result = 0, l = 0;
+        for (int r = 1; r < colors.Length; r++) {
+            if (colors[l] == colors[r]) { // find which one to pop and move pointer
+                if (neededTime[l] < neededTime[r]) {
+                    result += neededTime[l]; // pop and add the left balloon, update left ptr
+                    l = r;
+                } else {
+                    result += neededTime[r];
+                }
+            } else { // move pointers no dupe found
+                l = r; 
+            }
+        }
+        return result;
+    }    
     #endregion
 
     #region Sliding Window
