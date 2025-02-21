@@ -419,7 +419,7 @@ class BasicAlgorithms {
         // Inner BFS where i used a visited to track visited tiles, coulda been more optimized by using the graph itself to store instead of set
         int islands = 0;
         int rows = grid.Length, cols = grid[0].Length;
-        var visited = new HashSet<(int, int)>();
+        var visited = new HashSet<(int, int)>(); // this is actually inefficient when the graph gets large... at that point just copy the graph
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++) {
                 if (visited.Contains((r,c))) { // already visited this tile
