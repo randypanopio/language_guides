@@ -404,12 +404,57 @@ class BasicAlgorithms {
     #endregion
 
     #region Reverse Iteration
-    public void countBackwards(IEnumerable<int> nums)
+    public void countBackwards(IEnumerable<int> nums){
         for (int i = nums.Length - 1; i >= 0; i--) {
             var foo = nums[i];
         }
+    }        
     #endregion
 
+    #region Graphs 
+
+    // BFS
+    public int NumIslands(char[][] grid) {
+        // https://leetcode.com/problems/number-of-islands/
+        // Inner BFS where i used a visited to track visited tiles, coulda been more optimized by using the graph itself to store instead of set
+        int islands = 0;
+        int rows = grid.Length, cols = grid[0].Length;
+        var visited = new HashSet<(int, int)>();
+        for (int r = 0; r < rows; r++){
+            for (int c = 0; c < cols; c++) {
+                if (visited.Contains((r,c))) { // already visited this tile
+                    continue;
+                }
+                if (grid[r][c] == '1') { // new island found, start BFS
+                    islands++;
+                    BFS(r,c);
+                }   
+            }
+        }
+        
+        void BFS(int r, int c) { // BFS if we encounter an island tile, which updates the visited
+            var tup = (r, c);
+            var queue = new Queue<(int, int)>();
+            queue.Enqueue(tup);
+            visited.Add(tup);
+            while (queue.Count > 0) {
+                var current = queue.Dequeue();
+                int row = current.Item1, col = current.Item2;
+                int[][] directions = { new[] {0, 1}, new[] {0, -1}, new[] {1, 0}, new[] {-1, 0} }; // E,W,N,S
+                foreach (var dir in directions) {
+                    int dirrow = dir[0], dircol = dir[1]; // unpack the directions
+                    int tvrow = row + dirrow, tvcol = col+ dircol; // create the directions to visit
+                    if (tvrow >= 0 && tvrow < rows && tvcol >= 0 && tvcol < cols // do bounds checking first
+                        && grid[tvrow][tvcol] == '1' && !visited.Contains((tvrow, tvcol)) ) { // the newly visited tile is still part of the island
+                        queue.Enqueue((tvrow, tvcol)); // add the tile to BFS its neighbors
+                        visited.Add((tvrow, tvcol));
+                    }
+                }
+            }
+        }
+        return islands;
+    }
+    #endregion
 
     #region Linked List
  public class ListNode {
