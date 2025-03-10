@@ -168,6 +168,16 @@ public class DataStructures {
     #region Switch Case
 
     #endregion
+    
+    #region Sorting
+    var nums = new List<int> { 5, 2, 8, 3, 9 };
+
+    // sorting a string
+    var sortedstr = String.Concat("bca".OrderBy(x=>x)); // sort ascending
+
+    // sort by inner value predicate (in place)
+    Array.Sort(intervals, (a,b) => a[0]- b[0]);
+    #endregion
 }
 
 class BasicAlgorithms {
@@ -200,8 +210,8 @@ class BasicAlgorithms {
     
     public int[] TopKFrequent(int[] nums, int k) {
         // https://leetcode.com/problems/top-k-frequent-elements/
-        // Step 1 generate freq map O(n)
-        Dictionary<int, int> freq = new Dictionary<int, int>();
+        // Step 1 generate freq map O(n), where key is the num in arr and val is occurance.
+        var freq = new Dictionary<int, int>();
         foreach (int num in nums) {
             if (freq.ContainsKey(num)){
                 freq[num]++;
@@ -211,23 +221,20 @@ class BasicAlgorithms {
         }
 
         // Step 2 generate buckets for freqencies O(n)
-        // a bucket will contain a list of numbers with the same frequency will be grouped together
-        // we create from frequency 0 to maximum frequency, and add the numbers into the frequency bucket according to index
-        // eg at index i, it will represent numbers that occur exactly i times (index 0 in this case will have no occurance)
-        List<int>[] buckets = new List<int>[nums.Length+1];
-        foreach (int key in freq.Keys){
-            int occurance = freq[key];
+        var buckets = new List<int>[nums.Length+1]; // declare a an array of size n+1, which will contain a list of ints
+        // for each key we push it to our buckets, where the index represents numbers of that occurance
+        foreach (int key in freq.Keys){ 
+            int occurance = freq[key]; // get the value, which is the occurance of key
             if (buckets[occurance] == null) {
                 buckets[occurance] = new List<int>();
             }
-            buckets[occurance].Add(key); 
+            buckets[occurance].Add(key); // the i in buckets[i] is occurance, which contains nums of that occurance
         }
         
-        // increment count using index as the number to increment
         // step 3 Build the resulting array of up to K length
         // Iterate backwards from len (max occurance) until we reach k elements
         int[] result = new int[k];
-        int index = 0; // used to track where to insert in our resulting array, this lets us skip casting the list into an array 
+        int index = 0; // used to track where to insert in our resulting array
         for (int i = buckets.Length - 1; i >= 0; i--) {
             if (buckets[i] != null) { // this bucket has no nums of this frequency
                 foreach (int item in buckets[i]) {
@@ -379,6 +386,37 @@ class BasicAlgorithms {
         return max;
     }
 
+    // sliding window can also be implemented wit ha for loop if one pointer only grows iteratively
+    public int MaxProfit(int[] prices) {
+        int left = 0, max = 0;
+        for (int right = 1; right < prices.Length; right++) {
+            if (prices[right] > prices[left]) { // We are in an upswing
+                int profit = prices[right] - prices[left]; // Calculate the profit
+                max = Math.Max(max, profit); // Compare to current max profit
+            } else {
+                left = right; // Move left pointer to a downswing
+            }
+        }   
+        return max;
+    }
+
+    public int MaxArea(int[] height) {
+        // https://leetcode.com/problems/container-with-most-water/
+        int left = 0, right = height.Length - 1;
+        int maxArea = 0;
+        while (left < right) {
+            int minHeight = Math.Min(height[left], height[right]);
+            int width = right - left;
+            maxArea = Math.Max(maxArea, minHeight * width);
+            if (height[left] < height[right]) {// Move the pointer pointing to the shorter line
+                left++;
+            } else {
+                right--;
+            }
+        }
+        return maxArea;
+    }
+
     #endregion
 
     #region Kadane's algorithm - Maximum Sub Array
@@ -413,6 +451,7 @@ class BasicAlgorithms {
 
     #region Graphs 
 
+    #region BFS 
     // BFS
     public int NumIslands(char[][] grid) {
         // https://leetcode.com/problems/number-of-islands/
@@ -454,6 +493,11 @@ class BasicAlgorithms {
         }
         return islands;
     }
+    #endregion
+
+    #region  DFS
+
+    #endregion
     #endregion
 
     #region Linked List
