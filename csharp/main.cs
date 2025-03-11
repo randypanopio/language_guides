@@ -455,6 +455,7 @@ class BasicAlgorithms {
     // BFS
     public int NumIslands(char[][] grid) {
         // https://leetcode.com/problems/number-of-islands/
+        // Also same problem https://leetcode.com/problems/max-area-of-island/
         // Inner BFS where i used a visited to track visited tiles, coulda been more optimized by using the graph itself to store instead of set
         int islands = 0;
         int rows = grid.Length, cols = grid[0].Length;
@@ -496,7 +497,67 @@ class BasicAlgorithms {
     #endregion
 
     #region  DFS
+    public int MaxAreaOfIsland(int[][] grid) {
+        // https://leetcode.com/problems/max-area-of-island/
+        // DFS as helper function to track visited. Note that this appraoch modifies the original grid comopared to my code in BFS
+        int maxArea = 0;
+        for (int r = 0; r < grid.Length; r++) {
+            for (int c = 0; c < grid[0].Length; c++) {
+                if (grid[r][c] == 1) {
+                    maxArea = Math.Max(DFS(grid,r,c), maxArea);
+                }
+            }
+        }
+        return maxArea;
+        private int DFS(int[][] grid, int r, int c) { // helper DFS func
+            if (r < 0 || c < 0 || r >= grid.Length || c >= grid[0].Length) { return 0; }// bounds check
+            if (grid[r][c] == 0 ) { return 0; }
+            grid[r][c] = 0; // Mark as visit
+            int area = 1; // start calcualting area
+            area += DFS(grid, r + 1, c); // down
+            area += DFS(grid, r - 1, c); // up
+            area += DFS(grid, r, c + 1); // right
+            area += DFS(grid, r, c - 1); // left
+            return area;
+        }
+    }
 
+    public bool CanFinish(int numCourses, int[][] prerequisites) {
+        // https://leetcode.com/problems/course-schedule/
+        // use DFS for cycle detection
+        var adjacency = new Dictionary<int, List<int>>(); // 
+        var visited = new int[numCourses]; // 0 = unvisited, 1 = visiting, 2 = complete
+        foreach (var pair in prerequisites) {
+            int course = pair[0];
+            int requirement = pair[1];
+            if (!adjacency.ContainsKey(requirement)) {
+                adjacency[requirement] = new List<int>();
+            }
+            adjacency[requirement].Add(course);
+        }
+        // DFS each course
+        for(int i = 0; i < numCourses; i++) {
+            if (hasCycle(i)) {
+                return false; // cycle found, not possible
+            }
+        }
+        // DFS to check against the adjacency list if a cycle is detected
+        bool hasCycle (int course) {
+            if (visited[course] == 1) return true; // we visit and already visiting course in this DFS
+            if (visited[course] == 2) return false; // already done, not connected but visited
+            visited[course] = 1; // mark in cycle detection
+            if (adjacency.ContainsKey(course)) {
+                foreach (var tovisit in adjacency[course]) { // visit each node in the adjacency list
+                    if (hasCycle(tovisit)) {
+                        return true; // exit early when cylce found
+                    } // if not proceed visiting the other nodes and check
+                }
+            }
+            visited[course] = 2; // DFS done mark as complete
+            return false; // no cycle just return 
+        }
+        return true; //completed traversal, no cycle, doable
+    }
     #endregion
     #endregion
 
