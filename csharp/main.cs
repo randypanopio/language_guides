@@ -367,6 +367,29 @@ class BasicAlgorithms {
         }
         return result;
     }    
+
+    public bool ValidPalindrome(string s) {
+        // https://leetcode.com/problems/valid-palindrome-ii/submissions/1572182173/
+        // actually two nested two pointers, which solves the issue of recoonstructing the string every time
+        int left = 0, right = s.Length - 1;
+        while (left < right) {
+            if (s[left] != s[right]) {
+                // Skip left character OR right character and check if palindrome
+                return isPalindrome(s, left + 1, right) || isPalindrome(s, left, right - 1);
+            }
+            left++;
+            right--;
+        }
+        return true; // Already a palindrome
+        bool isPalindrome (string s, int left, int right) { // need to pass indices to stop having to recreate new string
+            while (left < right) {
+                if (s[left] != s[right]) { return false; }
+                left++;
+                right--;
+            }
+            return true;
+        }
+    }
     #endregion
 
     #region Sliding Window
@@ -420,7 +443,18 @@ class BasicAlgorithms {
     #endregion
 
     #region Kadane's algorithm - Maximum Sub Array
-    // TODO
+    public int MaxSubArray(int[] nums) {
+        // https://leetcode.com/problems/maximum-subarray/
+        int maxSub = nums[0], curSum = 0;
+        foreach (int num in nums) {
+            if (curSum < 0) {
+                curSum = 0;
+            }
+            curSum += num;
+            maxSub = Math.Max(maxSub, curSum);
+        }
+        return maxSub;
+    }
     #endregion
 
     #region Binary Search
@@ -439,6 +473,40 @@ class BasicAlgorithms {
         } 
         return -1; // not found
     }
+
+    // rotated array
+        public int Search(int[] nums, int target) {
+        int left = 0, right = nums.Length-1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (nums[mid] == target) {
+                return mid;
+            }
+
+            // Check if the left half is sorted
+            if (nums[left] <= nums[mid]) { 
+                // make sure target is in between num[left] and nums[mid]
+                // we decide if the rightmost value is greater than target
+                // then it must exist  in the left half - rotation
+                // other case target is less than mid, it is also in left half
+
+                if (nums[left] <= target && target < nums[mid]) {
+                    right = mid - 1; // Search in the left half
+                } else {
+                    left = mid + 1; // Search in the right half
+                }
+            } else {
+                // The right half is sorted
+                // If the target is in the sorted right half
+                if (nums[mid] < target && target <= nums[right]) {
+                    left = mid + 1; // Search in the right half
+                } else {
+                    right = mid - 1; // Search in the left half
+                }
+            }
+        }        
+        return -1;
     #endregion
 
     #region Reverse Iteration
@@ -627,10 +695,11 @@ class BasicAlgorithms {
 }
 
 #region Basic Algorithms
+    #region reverse binary tree 
 
+    #endregion
 
+    #region balance a BST 
 
-
-
-
+    #endregion
 #endregion
