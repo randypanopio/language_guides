@@ -1,4 +1,7 @@
 
+import heapq
+from collections import deque
+
 
 class Node:
     '''
@@ -156,36 +159,102 @@ class MyStack():
 
 
 def python_queue():
-
     '''
-    Queue
+    Queue, Python internals is a dequeue
     '''
     print("\n====== Queue ======")
 
     # Decleration
-    p_set: set = set()
-    p_set = {"foo", "bar"}
-
-    # Add
-    p_set.add("key")
-
-    # Remove
-    p_set.remove("key")
-    # Remove even if not in set
-    p_set.discard("key")
-
-    # Access (In set)
-    print(f"Is 'foo' in set: {'foo' in p_set}")
-    print(f"Is 'baz' in set: {'baz' in p_set}")
-
-    print("Printing Set Items:")
-    for item in p_set:
+    p_q: deque = deque()
+    
+    # Enqueue 
+    p_q.append('foo')
+    for n in range(3):
+        p_q.append(f"s{n}")
+    print("printing items in queue")
+    for item in p_q:
         print(item)
+
+    # Dequeue AKA remove from front 
+    item = p_q.popleft()
+    print(f"Dequeued item: {item}")
+
+    # Peek (Q is array based and index 0 is "front")
+    front = p_q[0]
+    print(f"Q start/peek item: {front}")
+
+    # Check End 
+    end = p_q[len(p_q)-1]
+    print(f"Q end item: {end}")
+
+    is_empty = len(p_q) == 0
+    print(f"Is q empty: {is_empty}")
 
     print("====== Queue ======")
     return
 
+def python_heapq():
+    '''
+    Heap Queue or Priority Queue
+    '''
+    print("\n====== Priority Queue ======")
 
+    # Decleration, min heap by default
+    p_pq: heapq = []
+    
+    pq_items = {
+        (1, "foo"), # highest 
+        (5, "bar"), # low 
+        (3, "baz")  # med
+    }
+    # Enqueue with priority (Priority, Value)
+    heapq.heappush(p_pq, (9, 20)) # lowest prio
+    for item in pq_items:
+        heapq.heappush(p_pq, item)
+    print("PQ contents:", p_pq)
+
+    # Dequeue (remove highest priority = lowest number)
+    priority, item = heapq.heappop(p_pq)
+    print(f"Priority Queue Pop: prio: {priority}, item: {item}")
+
+    # Peek (look at highest priority without removing)
+    priority, item = p_pq[0]  # Doesn't remove
+    print(f"Priority Queue Peek: prio: {priority}, item: {item}")
+
+    # Check if empty
+    is_empty = len(p_pq) == 0
+    print(f"Is PQ empty: {is_empty}")
+
+    print("====== Priority Queue ======")
+    return
+
+def python_string():
+    print("\n====== Strings ======")
+
+    p_str: str = "strings"
+
+    for c in p_str:
+        print(c)
+
+    print("====== Strings ======")
+    return
+
+
+def python_sorting():
+    '''
+    Builtins Sorting 
+    '''
+    # NOTE sets cannot be sorted. always use a list
+    unsorted_list = [5, 2, 8, 3, 9]
+    print(f"Unsorted: {unsorted_list}")
+    
+    # copy sorted
+    sorted_copy = sorted(unsorted_list)
+    print(f"Copy Sorted: {sorted_copy}")
+
+    # In place sort
+    unsorted_list.sort()
+    print(f"Sorted Initial: {unsorted_list}")
 
 if __name__ == "__main__":
     python_dictionary()
@@ -198,3 +267,8 @@ if __name__ == "__main__":
         stack.push(f"(s:{i})")
     stack.traverse_print()
     print("====== Linked List Stack ======")
+
+    python_queue()
+    python_heapq()
+    python_string()
+    python_sorting()
