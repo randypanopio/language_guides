@@ -280,7 +280,7 @@ class BasicAlgorithms {
     }
 
     // twosum 2
-    public int[] TwoSum(int[] numbers, int target) {
+    public int[] TwoSumTwo(int[] numbers, int target) {
         // https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/description/
         // condition, the array is sorted, so we are finding numbers that add up to target. Target = L + R
         var left = 0; 
@@ -627,6 +627,54 @@ class BasicAlgorithms {
         return true; //completed traversal, no cycle, doable
     }
     #endregion
+
+    #region Topological Sort - Using BFS
+    // https://www.youtube.com/watch?v=eL-KzMXSXXI fiset refernce
+    public int[] FindOrder(int numCourses, int[][] prerequisites) {
+        var adjacency = new Dictionary<int, List<int>>();
+        var prereq = new int[numCourses]; // the amount of prereqs before this index can be taken
+        // build adjacency list and calculate prereq
+        foreach (var pair in prerequisites) {
+            int course = pair[0];
+            int prerequisite = pair[1];
+            
+            if (!adjacency.ContainsKey(prerequisite)) {
+                adjacency[prerequisite] = new List<int>();
+            }
+            adjacency[prerequisite].Add(course);
+            prereq[course]++;
+        }
+        
+        // Queue for courses with no prerequisites (in-degree 0)
+        Queue<int> queue = new Queue<int>();
+        for (int i = 0; i < numCourses; i++) {
+            if (prereq[i] == 0) {
+                queue.Enqueue(i);
+            }
+        }
+        
+        List<int> result = new List<int>();
+        
+        // Process the courses in topological order
+        while (queue.Count > 0) {
+            int course = queue.Dequeue();
+            result.Add(course);
+            
+            // Decrease the in-degree of dependent courses
+            if (adjacency.ContainsKey(course)) {
+                foreach (var neighbor in adjacency[course]) {
+                    prereq[neighbor]--;
+                    if (prereq[neighbor] == 0) {
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+        }
+        
+        // If the result doesn't contain all courses, there's a cycle
+        return result.Count == numCourses ? result.ToArray() : new int[0];
+    }  
+    #endregion
     #endregion
 
     #region Linked List
@@ -702,4 +750,443 @@ class BasicAlgorithms {
     #region balance a BST 
 
     #endregion
+
+    #region invert binary tree
+    public TreeNode InvertTree(TreeNode root) {
+                
+        var queue = new Queue<TreeNode>();
+        if (root != null) {
+            queue.Enqueue(root);
+        }        
+
+        while(queue.Count > 0) {
+            var node = queue.Dequeue();
+            var temp = node.left;
+            node.left = node.right;
+            node.right = temp;
+
+            if (node.left != null) {
+                queue.Enqueue(node.left);
+            }
+            if (node.right != null) {
+                queue.Enqueue(node.right);
+            }
+        }
+
+        return root;
+    }
+    #endregion
 #endregion
+
+
+
+    public int Rob(int[] nums) {
+        Dictionary<int, int> memo = new Dictionary<int, int>(); // store computed results
+        // compute the maximum amount that can be robbed from house i
+        // use memo to check previously computed values
+        int RobFrom(int i, int[] nums) {
+            if (i >= nums.Length) { return 0; } // base case, reached last house
+            if (memo.ContainsKey(i)) { return memo[i]; } // return cache, so we only calculate uncomputed houses so far, maintain O(n)
+            
+            // conditional calc
+            // figure out which is more efficient to rob from, 1 or 2 house down
+            int result = Math.Max(RobFrom (i + 1, nums), nums[i] + RobFrom(i + 2, nums)); 
+
+            memo[i] = result;
+            return result;
+        }
+    return RobFrom(0, nums); // start calculating how much we can rob from beginning
+    }
+
+
+    public TreeNode LowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null || root == p || root == q) {
+            return root; // this node is a leaf's null or is the node we want
+        }
+
+        var left = LowestCommonAncestor(root.left, p, q); // identify p or q in left st, or if not found
+        var right = LowestCommonAncestor(root.right, p, q); // do the same
+
+        if (left != null && right != null) {
+            return root; // both p and q are in a different subtree, return 
+        }
+
+        return left ?? right; // also satisfies node being descendant of itself
+    }
+
+// ===
+    public string[] ReorderLogFiles(string[] logs) {
+        var digitLogs = new List<string>();
+        var letterLogs = new List<string>();
+
+        foreach (var log in logs) {
+            // find identifier
+            var idEnd = log.IndexOf(' ');
+            var id = log.Substring(0, idEnd);
+            // parse the content and see if it is a digit or letter 
+            var content = log.Substring(idEnd + 1);
+            if (Char.IsDigit(content[0])) {
+                digitLogs.Add(log);
+            } else {
+                letterLogs.Add(log);
+            }
+        } 
+        // sort the letterLogs O(nlogn)
+        letterLogs.Sort(CompareLogs);
+        // combine logs O(len(digitlogs))
+        letterLogs.AddRange(digitLogs);
+        return letterLogs.ToArray();
+    }
+
+    // implement a custom comparator based on reqs
+    private int CompareLogs (string log1, string log2) {
+        int space1 = log1.IndexOf(' ');
+        int space2 = log2.IndexOf(' ');
+
+        string id1 = log1.Substring(0, space1);
+        string content1 = log1.Substring(space1 + 1);
+
+        string id2 = log2.Substring(0, space2);
+        string content2 = log2.Substring(space2 + 1);
+
+        // first compare the content itself 
+        int cmp = string.Compare(content1, content2, StringComparison.Ordinal);
+        if (cmp != 0) {
+            return cmp;
+        } else { // if equality, compare by the id
+            return string.Compare(id1, id2, StringComparison.Ordinal);
+        }
+    }
+//==
+
+    public string ReorganizeString(string s) {
+        var freq = new Dictionary<char, int>(); // key is char in s, val is freq
+        foreach (var c in s) {
+            if (freq.ContainsKey(c)) {
+                freq[c]++;
+            } else {
+                freq[c] =1;
+            }
+        }
+
+        var result = new StringBuilder();
+        // loop through and identify from freq map which val has the largest value
+        for (int i = 0; i < s.Length; i++) {
+            char maxChar = '\0'; // TODO could be a bool instead but for now this is fine
+            var maxFreq = 0; 
+            foreach (var kvp in freq) { // key is char, val is freq of char
+                if (kvp.Value > maxFreq) {
+                    // ensure within bounds
+                    if (i ==0 || result[i-1] != kvp.Key) { // found the largest possible frequent value, set it as what to append
+                        maxFreq = kvp.Value;
+                        maxChar = kvp.Key;
+                    }
+                }
+            }
+            // no potential maxChar is found -> not possible to rearrange
+            if (maxChar == '\0') {
+                return "";
+            }
+
+            freq[maxChar]--; // update freqmap
+            result.Append(maxChar); // append what should be the largest char
+            // clear from dict if empty -> so we can check if no maxChar is found 
+            if (freq[maxChar] == 0){
+                freq.Remove(maxChar);
+            }
+        }
+        return result.ToString();
+    }
+// ====
+    public int MaxAreaOfIsland(int[][] grid) {
+        int maxArea = 0;
+        for (int r = 0; r < grid.Length; r++) {
+            for (int c = 0; c < grid[0].Length; c++) {
+                if (grid[r][c] == 1) {
+                    maxArea = Math.Max(DFS(grid,r,c), maxArea);
+                }
+            }
+        }
+        return maxArea;
+    }
+    int DFS(int[][] grid, int r, int c) {
+        if (r < 0 || c < 0 || r >= grid.Length || c >= grid[0].Length) { return 0; }// bounds check
+        if (grid[r][c] == 0 ) { return 0; }
+        grid[r][c] = 0; // Mark as visit
+        int area = 1; // start calcualting area
+        area += DFS(grid, r + 1, c); // down
+        area += DFS(grid, r - 1, c); // up
+        area += DFS(grid, r, c + 1); // right
+        area += DFS(grid, r, c - 1); // left
+        return area;
+    }
+
+// ==== 
+
+    public int MaxArea(int[] height) {
+        int left = 0, right = height.Length - 1;
+        int maxArea = 0;
+        while (left < right) {
+            // Calculate current area
+            int minHeight = Math.Min(height[left], height[right]);
+            int width = right - left;
+            maxArea = Math.Max(maxArea, minHeight * width);
+            // Move the pointer pointing to the shorter line
+            if (height[left] < height[right]) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+        return maxArea;
+    }
+
+// ===
+    public int SubarraySum(int[] nums, int k) {
+        int n = nums.Length;
+        if (n == 0)
+            return 0;
+
+        int result = 0;
+        for (int start = 0; start < n; start++) {
+            int sum = 0;
+            for (int end = start; end < n; end++) {
+                sum += nums[end];
+                if (sum == k) {
+                    result++;
+                }
+            }
+        }
+
+        return result;
+    }
+// ===
+
+    // kadanes
+    public int MaxSubArray(int[] nums) {
+        int maxSub = nums[0], curSum = 0;
+        foreach (int num in nums) {
+            if (curSum < 0) {
+                curSum = 0;
+            }
+            curSum += num;
+            maxSub = Math.Max(maxSub, curSum);
+        }
+        return maxSub;
+    }
+
+// ==
+    public void ReorderList(ListNode head) {
+        if (head == null || head.next == null) return;
+        //find mid point using slow/fast and split. Slow eventually pointing to halfway
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        
+        ListNode secondHalf = slow.next;
+        slow.next = null; // Split the list
+        ListNode prev = null, curr = secondHalf;
+        while (curr != null) {
+            ListNode next = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = next;
+        }
+             
+        secondHalf = prev; // correctly reassign the secondhalf (since it was reversed)
+        ListNode firstHalf = head;
+        // merge, alternating from first and second
+        while (secondHalf != null) {
+            var temp1 = firstHalf.next;
+            var temp2 = secondHalf.next;
+            firstHalf.next = secondHalf;
+            secondHalf.next = temp1;
+            firstHalf = temp1;
+            secondHalf = temp2;
+        }           
+    }
+// 
+public class LRUCache {
+    public int capacity = 0;
+    // key is the int key for insertion, value points to the node of the kvp node
+    private Dictionary<int, Node> cache = new Dictionary<int, Node>(); // NOTE coulda used LinkedListNode
+    // Pointer node of the tail (last inserted) node -> LRU node
+    private Node tail = null; // its next is is LRU
+    // pointer node of the head (where to insert most recent) node -> MRU node
+    private Node head = null; // its prev is MRU
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        
+        // generate dummy nodes and initialize the linkedlist
+        this.tail = new Node(0,0); 
+        this.head = new Node(0,0);
+        this.tail.next = this.head;
+        this.head.prev = this.tail;
+    }
+    
+    public int Get(int key) {
+        if (cache.ContainsKey(key)) {
+            Node node = cache[key];
+            Remove(node); // removes it from ll
+            Insert(node); // moves it to MRU
+            return node.value;
+        } else {
+            return -1;
+        }
+    }
+
+    public void Put(int key, int value) {
+        if (cache.ContainsKey(key)) { // Reupdate the existing node, put it in MRU
+            Node existing = cache[key];
+            existing.value = value;  // Update value
+            Remove(existing);
+            Insert(existing);
+        } else {
+            if (cache.Count == capacity) {
+                Node lru = tail.next;  // Get LRU node (last node before tail)
+                Remove(lru);
+                cache.Remove(lru.key); // Remove from dictionary
+            }
+            Node newNode = new Node(key, value); // generate the node in LL in MRU
+            cache[key] = newNode;
+            Insert(newNode);
+        }
+    }
+
+    //helper insert, inserts the node to the MRU of cache, and automatically fix the links
+    private void Insert(Node node) {
+        Node prevMRU = head.prev; // The current MRU node
+        prevMRU.next = node;
+        node.prev = prevMRU;
+        node.next = head;
+        head.prev = node;
+    }
+
+    // removes passed node from LL (we get node from cache), and automatically fix the links 
+    private void Remove(Node node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+
+    // helper class to stricture a linked list NOTE turns out there is a LinkedListNode 
+    private class Node {
+        public int key;
+        public int value;
+        public Node prev;
+        public Node next;
+        public Node(int key, int value) {
+            this.key = key;
+            this.value = value;
+            this.prev = null;
+            this.next = null;
+        }
+    }
+}
+// ==
+    public int LongestPalindromeSubseq(string s) {
+        return LPS(s, 0, s.Length - 1);
+    }
+
+    // Helper function to find the longest palindromic subsequence
+    private int LPS(string s, int left, int right) {
+        // Base case: if left index crosses right, return 0 (no valid subsequence)
+        if (left > right) {
+            return 0;
+        }
+        // Base case: if left and right are at the same position, it's a single character (length 1)
+        if (left == right) {
+            return 1;
+        }
+        
+        // Case 1: If the characters at left and right match
+        if (s[left] == s[right]) {
+            // Include these characters and solve the inner substring
+            return 2 + LPS(s, left + 1, right - 1);
+        } else {
+            // Case 2: If characters don't match, try removing one character at a time
+            // Option 1: Remove the left character and solve for (left+1, right)
+            int option1 = LPS(s, left + 1, right);
+            // Option 2: Remove the right character and solve for (left, right-1)
+            int option2 = LPS(s, left, right - 1);
+            // Take the maximum of both cases
+            return Math.Max(option1, option2);
+        }
+    }
+
+// ===
+    public string ReorganizeString(string s) {
+        var freq = new Dictionary<char, int>(); // key is char in s, val is freq
+        foreach (var c in s) {
+            if (freq.ContainsKey(c)) {
+                freq[c]++;
+            } else {
+                freq[c] =1;
+            }
+        }
+
+        var result = new StringBuilder();
+        // loop through and identify from freq map which val has the largest value
+        for (int i = 0; i < s.Length; i++) {
+            char maxChar = '\0'; // TODO could be a bool instead but for now this is fine
+            var maxFreq = 0; 
+            foreach (var kvp in freq) { // key is char, val is freq of char
+                if (kvp.Value > maxFreq) {
+                    // ensure within bounds
+                    if (i ==0 || result[i-1] != kvp.Key) { // found the largest possible frequent value, set it as what to append
+                        maxFreq = kvp.Value;
+                        maxChar = kvp.Key;
+                    }
+                }
+            }
+            // no potential maxChar is found -> not possible to rearrange
+            if (maxChar == '\0') {
+                return "";
+            }
+
+            freq[maxChar]--; // update freqmap
+            result.Append(maxChar); // append what should be the largest char
+            // clear from dict if empty -> so we can check if no maxChar is found 
+            if (freq[maxChar] == 0){
+                freq.Remove(maxChar);
+            }
+        }
+        return result.ToString();
+    }
+
+// ==== intuitive
+    public int[] IntuiitiveProductExceptSelf(int[] nums) {
+        int n = nums.Length;
+        int[] prefix = new int[n];
+        int[] suffix = new int[n];
+        int[] result = new int[n];
+        prefix[0] = 1; // Compute prefix product
+        for (int i = 1; i < n; i++) {
+            prefix[i] = prefix[i - 1] * nums[i - 1];
+        }
+        suffix[n - 1] = 1; // Compute suffix product
+        for (int i = n - 2; i >= 0; i--) {
+            suffix[i] = suffix[i + 1] * nums[i + 1];
+        }
+        for (int i = 0; i < n; i++) { // Compute result as prefix[i] * suffix[i]
+            result[i] = prefix[i] * suffix[i];
+        }
+        return result;
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
