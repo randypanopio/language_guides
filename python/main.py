@@ -17,6 +17,12 @@ class Node:
         self.right = right 
         self.parent = parent
 
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
 def python_dictionary():
     '''
     Dictionary/Hashmap
@@ -257,8 +263,82 @@ def python_sorting():
     unsorted_list.sort()
     print(f"Sorted Initial: {unsorted_list}")
 
-# ========= Sliding Window =========
-def frequency_map(values: List[any]) -> dict:
+def python_loops():
+    '''
+    looping strats
+    '''
+    n = 4
+    # for (int i = 0; i < n; i+=1)
+    for k in range(0, n, 1): # arg0 is start inclusive, arg1 is end exclusive, arg3 is iterate size
+        print(k)
+    # for (int i = n; i > 0; i-=2)
+    for i in range(n, 0, -2):
+        print(i)
+
+# ========= Array Manipulation =========
+# Prefix Suffix Sums
+def productExceptSelf(self, nums: List[int]) -> List[int]:
+    # https://leetcode.com/problems/product-of-array-except-self/
+    '''
+        since no division and O(n) limitation, we know that when scanning the array
+        we can get the value of the current index since by the left and right intervals
+        i = [left] * [right]
+        approach: build the prefix and suffix arrays, then mult pref and suff to get correct i
+    '''
+    n = len(nums)
+
+    prefix = [0] * n # prefix[i] will contain all the current values to the left
+    suffix = [0] * n # suffix[i] contains all prods to the right
+    result = [0] * n 
+    
+    prefix[0] = 1
+    for i in range(1, n):
+        prefix[i] = nums[i-1] * prefix[i-1]
+    suffix[n-1] = 1
+    for i in range(n-2, -1, -1):
+        suffix[i] = nums[i+1] * suffix[i+1]
+
+    for i in range(n):
+        result[i] = prefix[i] * suffix[i]
+
+    return result
+
+def isValidSudoku(self, board: List[List[str]]) -> bool:
+    # https://leetcode.com/problems/valid-sudoku/
+    for i in range(9):
+        rset = set()
+        cset = set()
+        gset = set()
+        for j in range(9):
+            row = board[i][j]
+            col = board[j][i]
+
+            if row != ".":
+                if row in rset:
+                    return False
+                rset.add(row)
+
+            if col != ".":
+                if col in cset:
+                    return False
+                cset.add(col)
+
+            # also check the 3x3 grids to make sure they hold up the rule 
+            gr = 3 * (i//3) + (j//3)
+            gc = 3 * (i%3) + (j%3)
+            grid = board[gr][gc]
+            if grid != ".":
+                if grid in gset:
+                    return False
+                gset.add(grid)
+    return True
+
+
+# ========= Array Manipulation =========
+
+
+# ========= Frequency Map =========
+def frequency_map(values:st[any]) -> dict:
     # Use Dict where value of keys is its occurance 
     freq:dict = {} 
     for item in values:
@@ -318,11 +398,7 @@ def reorganizeString(s: str)-> str:
             index += 2
     
     return ''.join(result)
-
-
-
-    pass
-# ========= Sliding Window =========
+# ========= Frequency Map =========
 
 # ========= Two Pointers =========
 def isPalindrome(s: str) -> bool:
@@ -392,6 +468,52 @@ def minCost(colors: str, needed_time: List[int]) -> int:
     return result
 # ========= Two Pointers =========
 
+# ========= Stack =========
+def dailyTemperatures(self, temperatures: List[int]) -> List[int]:
+    # https://leetcode.com/problems/daily-temperatures/
+    # memorize but possibly soloable
+    n = len(temperatures)
+    result = [0] * n 
+    # stack to hold indices of days still looking for wamer days, monotonic decreasing
+    # eg: temps[s[0]] > temps[s[1]] > temps[s[2]] > ... older entries warmer 
+    stack = [] 
+    for i in range(n):
+        temp = temperatures[i]
+        while stack:
+            prev = stack[-1] # peek stack and check last prev day are warmer than current temp
+            if temperatures[prev] >= temperatures[i]:
+                break # previous days are warmer, break and preserve monotonic
+            # today's day is warmer, continue updating and resolve  
+            stack.pop()
+            result[prev] = i - prev # trick, since we store indices resolving down stack we just subtract to get the correct wait days 
+        stack.append(i) # push current day to check future warmere dates
+    return result
+
+def evalRPN(self, tokens: List[str]) -> int:
+    # https://leetcode.com/problems/evaluate-reverse-polish-notation/
+    stack = [] 
+    ops = {'+', '-', '*', '/'}
+    for token in tokens:
+        if token not in ops:
+            stack.append(int(token))
+        else:
+            # grop 2 nums from stack and apply ops
+            b = stack.pop() # the front of the stack, rhs most val
+            a = stack.pop() # the older value
+            if token == '+':
+                stack.append(a+b)
+            elif token == '-':
+                stack.append(a-b)
+            elif token == '*':
+                stack.append(a*b)
+            elif token == '/':
+                stack.append(int(a/b))
+    return stack.pop() # evad valuei s front of stack
+
+# ========= Stack =========
+
+
+
 
 # ========= Sliding Window =========
 
@@ -437,22 +559,185 @@ def search_rotated_array(nums: List[int], target: int) -> int:
             else:
                 right = mid -1
     return -1
+
+def isPerfectSquare(self, num: int) -> bool:
+    # https://leetcode.com/problems/valid-perfect-square/
+    # monotonic values of squares binary search
+    if num < 2: 
+        return True
+    left, right = 1, num // 2 # start searching the half of the num as its sq
+    while left <= right:
+        mid = left + ((right-left) // 2)
+        square = mid*mid
+        if square == num:
+            return True
+        elif square < num:
+            left = mid + 1
+        else:
+            right = mid -1
+    return False
+
+def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:
+    # indexing : matrix[row][col]
+    rows, cols = len(matrix), len(matrix[0])
+    i_left,i_right = 0, rows-1
+    while i_left <= i_right:
+        i_mid = i_left + ((i_right-i_left)//2) # get the middle interval 
+        # check if target within this interval and bsearch, otherwise update mid
+        if matrix[i_mid][0] <= target and matrix[i_mid][cols-1] >= target:
+            a_left, a_right = 0, cols-1
+            while a_left <= a_right:
+                a_mid = a_left + ((a_right-a_left)//2)
+                if target == matrix[i_mid][a_mid]:
+                    return True
+                elif matrix[i_mid][a_mid] < target:
+                    a_left = a_mid+1
+                else:
+                    a_right = a_mid-1
+            return False # could not find in this interval
+        elif matrix[i_mid][cols-1] < target:
+            i_left = i_mid+1
+        else:
+            i_right = i_mid-1
+    return False # unable to find
 # ========= Binary Search =========
 
 
 # ========= BFS =========
+# BFS -> Using a q to track visited
 def numIslands(grid: List[List[str]]) -> int:
     # https://leetcode.com/problems/number-of-islands/
     # Also same problem https://leetcode.com/problems/max-area-of-island/
     # Assuming we can modify the graph, we can use it to track visited tiles
-    pass
+    islands = 0 
+    rows = len(grid)
+    cols = len(grid[0])
 
+    def BFS(r:int, c: int):
+        pair = (r,c)
+        q = deque()
+        q.append(pair)
+        while len(q) > 0:
+            current = q.popleft()
+            row = current[0]
+            col = current[1]
+            directions = [[0,1], [0,-1], [1,0], [-1,0]] # E W N S
+            for direction in directions:
+                # create directions to visit
+                v_row = row+direction[0]
+                v_col = col+direction[1]
+                
+                # safety bounds check 
+                if v_row >= 0 and v_row < rows and v_col >= 0 and v_col < cols: 
+                    if grid[v_row][v_col] == '1': #unvisited tile
+                        q.append((v_row, v_col)) 
+                        grid[v_row][v_col] = '3' # mark as visited
+
+    # traverse grid 
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == '3': # visited 
+                continue
+            if grid[r][c] == '1': # new island, begin BFS
+                islands += 1
+                BFS(r,c)
+
+    return islands
+
+def invertTree(root: Optional[Node]) -> Optional[Node]:
+    q = deque()
+    if root:
+        q.append(root)
+
+    while len(q) > 0:
+        n = q.popleft()
+        temp = n.left 
+        n.left = n.right
+        n.right = temp
+
+        if n.left: 
+            q.append(n.left)
+        if n.right:
+            q.append(n.right)
+
+    return root
+
+def maxDepth(self, root: Optional[Node]) -> int:
+    # https://leetcode.com/problems/maximum-depth-of-binary-tree/
+    # BFS recursive max. Level Order traversal recurse adding the current depth of the tree 
+    if not root:
+        return 0 # base case
+    return 1 + max(self.maxDepth(root.left), self.maxDepth(root.right)) 
+
+def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+    # https://leetcode.com/problems/binary-tree-level-order-traversal/
+    # Level Order: classical top to bottom BFS, this is tricky medium
+    if not root:
+        return []
+    q = deque([root])
+    result = []
+    while q:
+        level = []
+        level_size = len(q) # how many nodes at this level
+        for _ in range(level_size): # append the list with ALL traversed nodes of this level
+            node = q.popleft()
+            level.append(node.val)
+            if node.left:
+                q.append(node.left)
+            if node.right:
+                q.append(node.right)
+        result.append(level)
+    return result
 # ========= BFS =========
 
 
 # ========= DFS =========
+def maxAreaOfIsland(self, grid: List[List[int]]) -> int:
+    # https://leetcode.com/problems/max-area-of-island/
+    # DFS as helper to track visited nodes, marking previously visited nodes
+    rows = len(grid)
+    cols = len(grid[0])
+
+    # DFS is used to calculate the area of the currently visited island
+    def DFS(grid, r, c):
+        # bounds check
+        if r < 0 or c < 0 or r >= rows or c >= cols:
+            return 0
+        if grid[r][c] == 0:
+            return 0
+        # mark this node as visited, simply turning it 0 to not need to handle previous code
+        grid[r][c] = 0
+        area = 1
+        # DFS each direction and calculate possible max area
+        area += DFS(grid, r+1, c)
+        area += DFS(grid, r-1, c)
+        area += DFS(grid, r, c+1)
+        area += DFS(grid, r, c-1)
+        return area
+
+     
+    max_area = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 1:
+                max_area = max(DFS(grid, r, c), max_area)
+
+    return max_area
+
+
+def isSameTree(self, p: Optional[TreeNode], q: Optional[TreeNode]) -> bool:
+    # https://leetcode.com/problems/same-tree/solutions/
+    if p is None and q is None: # recursed into empty, still same so its fine
+        return True
+    # one of the p or q is different (one is None other isnt), must be false
+    if p is None or q is None:
+        return False
+    if p.val == q.val: # compare existing values
+        return self.isSameTree(p.left, q.left) and self.isSameTree(p.right, q.right) 
+    return False # previous conditions fail, then there is a difference in the tree
 
 # ========= DFS =========
+
 
 
 # ========= Linked List =========
@@ -492,6 +777,44 @@ def mergeTwoLists(list1: Node, list2: Node) -> Optional[Node]:
         current.next = list2
     return result.next # return the merged lists head from the dummy node
 
+# ======== Slow Fast
+def hasCycle(self, head: Optional[ListNode]) -> bool:
+    # https://leetcode.com/problems/linked-list-cycle/
+    # slow fast pointers 
+    if not head or not head.next:
+        return False
+    
+    slow, fast = head, head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast:
+            return True
+    return False
+
+def removeNthFromEnd(self, head: Optional[Node], n: int) -> Optional[Node]:
+    # https://leetcode.com/problems/remove-nth-node-from-end-of-list/
+    # 1 pass, use slow fast pointers by pushing the fast pointer with a distance k from the slow pointer
+    dummy = Node(0)
+    dummy.next = head
+    slow = dummy 
+    fast = dummy 
+
+    # push fast n + 1 gap, so that slow will point to n-1 when fast reaches end
+    for _ in range(n + 1):
+        fast = fast.next
+
+    # move fast to end with slow moving as well
+    while fast:
+        fast = fast.next
+        slow = slow.next
+
+    # slow now points to n-1, remove it 
+    slow.next = slow.next.next
+    return dummy.next 
+
+# ======== Slow Fast
+
 #==== helpers
 def build_linked_list(values):
     if not values:
@@ -511,6 +834,23 @@ def print_linked_list(head):
     print(" -> ".join(vals))
 
 # ========= Linked List =========
+
+# ========= Memoization =========
+def fib(self, n: int) -> int:
+    # https://leetcode.com/problems/fibonacci-number/
+    # build a cache for prebiously calculated values
+    if n <= 1:
+        return n
+    cache = {} # memoize, store the previously calculated 
+    def calc(n):
+        if n <= 1:
+            return n
+        if n in cache:
+            return cache[n]
+        cache[n] = calc(n-1) + calc(n-2)
+        return cache[n]
+    return calc(n-1) + calc(n-2)
+# ========= Memoization =========
 
 
 if __name__ == "__main__":

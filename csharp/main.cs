@@ -1178,7 +1178,29 @@ public class LRUCache {
     }
 
 
+    public TreeNode InvertTree(TreeNode root) {
+                
+        var queue = new Queue<TreeNode>();
+        if (root != null) {
+            queue.Enqueue(root);
+        }        
 
+        while(queue.Count > 0) {
+            var node = queue.Dequeue();
+            var temp = node.left;
+            node.left = node.right;
+            node.right = temp;
+
+            if (node.left != null) {
+                queue.Enqueue(node.left);
+            }
+            if (node.right != null) {
+                queue.Enqueue(node.right);
+            }
+        }
+
+        return root;
+    }
 
 
 
