@@ -516,7 +516,62 @@ def evalRPN(self, tokens: List[str]) -> int:
 
 
 # ========= Sliding Window =========
+def checkInclusion(self, s1: str, s2: str) -> bool:
+    # https://leetcode.com/problems/permutation-in-string/
+    '''
+    does any substring of s2 have same character count as s1
+    I use a sliding window of size len(s1) over s2. 
+    I maintain a frequency dictionary for the window and compare it 
+    to the frequency dictionary of s1. If they match at any point, I’ve found a permutation.
+    '''
+    if len(s1) > len(s2):
+        return False
 
+    fmap = {}
+    window = {}
+    for c in s1:
+        if c in fmap:
+            fmap[c] += 1
+        else:
+            fmap[c] = 1
+
+    left = 0 
+    # use a window over s2 and check for permutations
+    for right in range(len(s2)):
+        c = s2[right]
+        if c in window:
+            window[c] += 1
+        else:
+            window[c] = 1
+        # ensure window stays within bounds
+        if right - left + 1 > len(s1):
+            window_left = s2[left]
+            window[window_left] -= 1
+
+            if window[window_left] == 0:
+                del window[window_left]
+            left += 1
+        if window == fmap:
+            return True
+    return False
+
+def maxProfit(self, prices: List[int]) -> int:
+    # https://leetcode.com/problems/best-time-to-buy-and-sell-stock/
+    # sliding window, we cannot go back in time so we cant just find min and max
+    # 2 pointers that find the lowest possible point for the left, and move the right to the highest
+    left = prices[0]
+    profit = 0
+
+    # need to iterate and update our left, which is our purchase date
+    for i in range(1, len(prices)):
+        day_price = prices[i]
+        # update the lowest possible purchase date
+        if day_price < left:
+            left = day_price
+        else:
+            # check if we should buy this day instead
+            profit = max(profit, day_price - left)
+    return profit
 # ========= Sliding Window =========
 
 
@@ -645,6 +700,7 @@ def numIslands(grid: List[List[str]]) -> int:
     return islands
 
 def invertTree(root: Optional[Node]) -> Optional[Node]:
+    # https://leetcode.com/problems/invert-binary-tree/
     q = deque()
     if root:
         q.append(root)
@@ -735,6 +791,49 @@ def isSameTree(self, p: Optional[TreeNode], q: Optional[TreeNode]) -> bool:
     if p.val == q.val: # compare existing values
         return self.isSameTree(p.left, q.left) and self.isSameTree(p.right, q.right) 
     return False # previous conditions fail, then there is a difference in the tree
+
+def canFinish(self, numCourses, prerequisites):
+    # https://leetcode.com/problems/course-schedule/
+    # manually build adjacency list
+    graph = {}
+    for i in range(numCourses):
+        graph[i] = []
+
+    for pair in prerequisites:
+        course = pair[0]
+        prereq = pair[1]
+        graph[course].append(prereq)
+
+    visited = set()    # fully processed
+    visiting = set()   # currently in recursion stack
+
+    def dfs(course):
+        # if already in current path -> cycle
+        if course in visiting:
+            return False
+
+        # if already verified, skip
+        if course in visited:
+            return True
+
+        visiting.add(course)
+
+        neighbors = graph[course]
+        for i in range(len(neighbors)):
+            prereq = neighbors[i]
+            if dfs(prereq) is False:
+                return False
+
+        visiting.remove(course)
+        visited.add(course)
+        return True
+
+    # must check every course (graph may be disconnected)
+    for i in range(numCourses):
+        if dfs(i) is False:
+            return False
+
+    return True
 
 # ========= DFS =========
 
