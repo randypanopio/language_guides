@@ -333,6 +333,19 @@ def isValidSudoku(self, board: List[List[str]]) -> bool:
                 gset.add(grid)
     return True
 
+def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+    # https://leetcode.com/problems/merge-intervals/
+    intervals.sort(key = lambda x: x[0]) # sort by first element
+    result = []
+    current = intervals[0] # store the current interval to be compared
+    for interval in intervals:
+        if interval[0] <= current[1]:
+            current[1] = max(current[1], interval[1]) # update the new bounds of the next iterations interval
+        else:
+            result.append(current) # no overlap add it to result
+            current = interval
+    result.append(current) # add the last remaining interval
+    return result
 
 # ========= Array Manipulation =========
 
@@ -949,7 +962,22 @@ def fib(self, n: int) -> int:
         cache[n] = calc(n-1) + calc(n-2)
         return cache[n]
     return calc(n-1) + calc(n-2)
+
+
 # ========= Memoization =========
+
+# ========= Greedy =========
+def maxSubArray(self, nums: List[int]) -> int:
+    # https://leetcode.com/problems/maximum-subarray/
+    res = nums[0] # store the best sub array found
+    cur = 0 
+    for num in nums:
+        if cur < 0: # negative values contribute to bad subarrays, start over
+            cur = 0
+        cur += num # extend the subarray 
+        res = max(res, cur) # update if new is he possible subarray
+    return res
+# ========= Greedy =========
 
 
 if __name__ == "__main__":
